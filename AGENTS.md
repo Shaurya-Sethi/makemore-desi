@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `src/`: Core code — `wavenet.py` (model) and `train_wavenet.py` (trainer + sampling).
+- `src/`: Core code — `wavenet.py` (model), `train_wavenet.py` (trainer + sampling), and `generate_names.py` (inference).
 - `data/`: Datasets — `raw/` (scraped CSV/JSON) → `processed/` (cleaned CSV, `preprocess.py`).
 - `models/`: Checkpoints — `wavenet_indian_names.pt` produced by training.
 - `web scrapers/`: Data collection — `scraper.py` (A–Z crawl), `enhance.py` (merge JSON firecrawl output).
@@ -10,8 +10,9 @@
 ## Build, Test, and Development Commands
 - Create env and install: `python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt` (Windows: `.venv\Scripts\activate`).
 - Preprocess data: `python data/processed/preprocess.py` (reads `data/raw/indian_first_names.csv`, writes cleaned CSV).
-- Scrape (optional): `python "web scrapers/scraper.py"` then re-run preprocess.
-- Train + sample: `python -m src.train_wavenet` (saves to `models/` and prints sample names).
+- Scrape (optional - not required): `python web scrapers/scraper.py` then re-run preprocess.
+- Train + sample: `python src/train_wavenet.py` (saves to `models/` and prints sample names).
+- Inference: `python src/generate_names.py` (generates names using the trained model).
 
 ## Coding Style & Naming Conventions
 - Python, 4‑space indentation, PEP 8; type hints where practical.
