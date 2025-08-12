@@ -204,6 +204,27 @@ options:
                         Sampling temperature (e.g., >1.0 for more creative, <1.0 for more conservative names). (default: 1.0)
 ```
 
+---
+
+### Interactive Web App
+
+This project now includes a Streamlit web app for interactive name generation.
+
+**Features:**
+- **Interactive Controls:** Adjust the starting letter, number of names, and temperature (creativity) in real-time.
+- **Save Favorites:** Select the names you like and keep a running list.
+- **Download Your List:** Save your favorite names to a `.txt` file with a single click.
+
+**How to run the app:**
+1. Make sure you have all the dependencies installed:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Run the Streamlit app from your terminal:
+   ```bash
+   streamlit run app.py
+   ```
+The app will open in your default web browser.
 
 ---
 

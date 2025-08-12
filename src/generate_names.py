@@ -2,7 +2,7 @@ import argparse
 import torch
 from pathlib import Path
 
-from wavenet import WaveNetLM
+from .wavenet import WaveNetLM
 
 # Configuration
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -10,22 +10,16 @@ MODEL_PATH = Path("models/wavenet_indian_names.pt")
 BLOCK_SIZE = 12  # equal to the training block size
 
 # Main execution
-def main(n: int, temperature: float):
-    """
-    Loads a pre-trained WaveNet model and generates a specified number of names.
-    """
+def load_model():
+    """Loads the WaveNet model and associated artifacts from the checkpoint."""
     if not MODEL_PATH.exists():
-        print(f"Error: Model checkpoint not found at '{MODEL_PATH}'")
-        print("Please run the training script first: python -m src.train_wavenet")
-        return
+        raise FileNotFoundError(f"Model checkpoint not found at '{MODEL_PATH}'")
 
-    # Load model, stoi, and itos from checkpoint
     checkpoint = torch.load(MODEL_PATH, map_location=DEVICE)
     stoi = checkpoint["stoi"]
     itos = checkpoint["itos"]
     vocab_size = len(stoi)
 
-    # Re-create the model with the same architecture as during training
     model = WaveNetLM(
         vocab_size=vocab_size,
         emb_dim=64,
@@ -36,31 +30,55 @@ def main(n: int, temperature: float):
     model.load_state_dict(checkpoint["model_state"])
     model.eval()
 
+    return model, stoi, itos
+
+def generate_names(model, stoi, itos, n, temperature=1.0, start_char='.'):
+    """Generates a list of names using the provided model."""
+    
     def decode(ids):
         return "".join(itos[i] for i in ids)
 
-    def sample(max_tokens=50):
-        # Start with the same context as in training: all padding ('.')
-        ctx = torch.zeros(1, BLOCK_SIZE, dtype=torch.long, device=DEVICE)
-        out = []
+    def sample(start_char, max_tokens=50):
+        if temperature <= 0:
+            raise ValueError("Temperature must be greater than 0")
+        # Initialize context
+        if start_char != '.':
+            # Start with a specific letter
+            start_id = stoi.get(start_char.lower())
+            if start_id is None:
+                # Fallback for characters not in vocab
+                return f"'{start_char}' not in vocab"
+            
+            # Create a context with the starting character
+            ctx = torch.full((1, BLOCK_SIZE), 0, dtype=torch.long, device=DEVICE)
+            ctx[0, -1] = start_id
+            out = [start_id]
+        else:
+            # Default behavior: start with padding tokens
+            ctx = torch.zeros((1, BLOCK_SIZE), dtype=torch.long, device=DEVICE)
+            out = []
+
         with torch.no_grad():
-            for _ in range(max_tokens):
+            for _ in range(max_tokens - len(out)):
                 logits = model(ctx)[:, -1] / temperature
                 probs = torch.softmax(logits, dim=-1)
                 next_id = torch.multinomial(probs, 1)
-                ctx = torch.cat([ctx[:, 1:], next_id], dim=1)  # slide window
+
                 if next_id.item() == 0:  # End of string token
                     break
+                
                 out.append(next_id.item())
+                ctx = torch.cat([ctx[:, 1:], next_id], dim=1)
+        
         return decode(out)
 
-    print(f"\nGenerating {n} names with temperature {temperature}:\n")
-    for i in range(n):
-        print(f"  {i+1}. {sample()}")
-    print()
+    names = []
+    for _ in range(n):
+        names.append(sample(start_char))
+    return names
 
-
-if __name__ == "__main__":
+def main_cli():
+    """Command-line interface for generating names."""
     parser = argparse.ArgumentParser(
         description="Generate Indian names using a pre-trained WaveNet model."
     )
@@ -73,5 +91,26 @@ if __name__ == "__main__":
         default=1.0,
         help="Sampling temperature (e.g., >1.0 for more creative, <1.0 for more conservative names).",
     )
+    parser.add_argument(
+        "--start-char",
+        type=str,
+        default='.',
+        help="A character to start the name with (e.g., 'A'). Defaults to random.",
+    )
     args = parser.parse_args()
-    main(args.n, args.temperature)
+
+    try:
+        model, stoi, itos = load_model()
+        names = generate_names(model, stoi, itos, args.n, args.temperature, args.start_char)
+        
+        print(f"\nGenerating {args.n} names with temperature {args.temperature} starting with '{args.start_char}':\n")
+        for i, name in enumerate(names):
+            print(f"  {i+1}. {name}")
+        print()
+
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+        print("Please run the training script first: python src/train_wavenet.py")
+
+if __name__ == "__main__":
+    main_cli()

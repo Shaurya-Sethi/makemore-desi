@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 from pathlib import Path
 
-from wavenet import WaveNetLM  # noqa: F401
+from .wavenet import WaveNetLM  # noqa: F401
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 DATA_PATH = Path("data/processed/indian_first_names_cleaned.csv")  # one name per line
@@ -118,17 +118,25 @@ for step in range(1, STEPS + 1):
             break
 
 # ------------- 5.  Save checkpoint ---------------------
-torch.save(
-    {
-        "model_state": model.state_dict(),
-        "stoi": stoi,
-        "itos": itos,
-    },
-    SAVE_DIR / "wavenet_indian_names.pt",
-)
+
+# The best model is saved during validation loss improvements above.
+# Avoid overwriting that checkpoint unless none was created.
+if not best_model_path.exists():
+    torch.save(
+        {
+            "model_state": model.state_dict(),
+            "stoi": stoi,
+            "itos": itos,
+        },
+        best_model_path,
+    )
+
+
 
 # ------------- 6.  Sampling ----------------------------
 def sample(model, block_size=12, max_tokens=50, temperature=1.0):
+    if temperature <= 0:
+        raise ValueError("Temperature must be greater than 0")
     model.eval()
     # Start with the same context as in training: all padding ('.')
     ctx = torch.zeros(1, block_size, dtype=torch.long, device=DEVICE)
