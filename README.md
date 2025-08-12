@@ -168,16 +168,42 @@ pip install -r requirements.txt
 **Train the model:**
 
 ```bash
-python -m src.train_wavenet
+python src/train_wavenet.py
 ```
+
 
 **Generate new names:**
 
 ```bash
-python -m src.generate_names --n 20 --temperature 1.1
+python src/generate_names.py --n 20 --temperature 1.1
 ```
 
 **Sampling can be customized for name count and creativity (temperature).**
+
+---
+
+**Command-line help:**
+
+You can view all available options and their descriptions by running:
+
+```bash
+python src/generate_names.py --help
+```
+
+This will display:
+
+```
+usage: generate_names.py [-h] [--n N] [--temperature TEMPERATURE]
+
+Generate Indian names using a pre-trained WaveNet model.
+
+options:
+  -h, --help            show this help message and exit
+  --n N                 Number of names to generate. (default: 20)
+  --temperature TEMPERATURE
+                        Sampling temperature (e.g., >1.0 for more creative, <1.0 for more conservative names). (default: 1.0)
+```
+
 
 ---
 
