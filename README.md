@@ -2,8 +2,6 @@
 
 ## Natural Language Processing with a Wavenet Style Model
 
----
-
 ### Project Overview
 
 WaveNet (DeepMind, 2016) was originally introduced as a deep generative model for raw audio waveforms, but here I make use of a similar architecture for generating text instead.
