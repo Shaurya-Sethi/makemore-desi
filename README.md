@@ -1,12 +1,12 @@
-# makemore-desi
+# Indic Name Forge
 
-## Indian Name Generation with a Wavenet Language Model
+## Natural Language Processing with a Wavenet Style Model
 
 ---
 
 ### Project Overview
 
-
+WaveNet (DeepMind, 2016) was originally introduced as a deep generative model for raw audio waveforms, but here I make use of a similar architecture for generating text instead.
 This project is a practical and research-inspired extension of Andrej Karpathy’s “makemore” language model series. Building on his invitation to beat his validation loss of 1.993 as an exercise, I set out to design, train, and evaluate a more expressive neural network on a custom dataset of Indian first names.
 
 
@@ -25,24 +25,26 @@ This project is a practical and research-inspired extension of Andrej Karpathy�
 data/
   processed/
     indian_first_names_cleaned.csv   # Final cleaned names
-    preprocess.py                   # Data cleaning & preparation script
+    preprocess.py                    # Data cleaning & preparation script
   raw/
-    indian_first_names_raw.csv      # Raw scraped names
-    results.json                    # some names from firecrawl
+    indian_first_names_raw.csv       # Raw scraped names
+    results.json                     # some names from firecrawl
 
 models/
-  wavenet_indian_names.pt           # Trained model checkpoint
+  wavenet_indian_names.pt            # Trained model checkpoint
 
 src/
-  train_wavenet.py                  # Model training script
-  wavenet.py                        # Wavenet model definition
+  train_wavenet.py                   # Model training script
+  wavenet.py                         # Wavenet model definition
+  generate_names.py                  # Inference script
 
 web scrapers/
-  scraper.py                        # Core web scraping logic
-  enhance.py                        # Extra enrichment for names
+  scraper.py                         # Core web scraping logic
+  enhance.py                         # Extra enrichment for names
 
-requirements.txt                    # Python dependencies
-samples.txt                         # Generated sample names
+app.py                               # streamlit web app
+requirements.txt                     # Python dependencies
+samples.txt                          # Generated sample names
 README.md
 ```
 
